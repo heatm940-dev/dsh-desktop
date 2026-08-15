@@ -78,7 +78,8 @@ npm run setup
 
 完成后再 `npm run dev` 即可起应用。
 
-> 默认用 npmmirror 镜像。`--registry=https://registry.npmjs.org` 可切回官方源。
+> 仓库内置 `.npmrc`：默认用 npmmirror 镜像（含 Electron 二进制镜像），国内网络友好。
+> `npm run setup -- --registry=https://registry.npmjs.org` 可切回官方源。
 
 ### 手动环境准备（分解版）
 
