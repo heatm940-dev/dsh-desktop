@@ -77,6 +77,9 @@ mac:
   category: public.app-category.developer-tools
   icon: build/icon.png
   artifactName: ${productName}-${version}-mac-${arch}.${ext}
+  # No Developer ID certificate: never auto-discover keychain identities
+  # (GitHub macOS runners carry one and the empty-password attempt fails).
+  identity: null
   # Signing/notarization happen automatically when CSC_LINK / CSC_KEY_PASSWORD
   # (and optionally APPLE_ID / APPLE_APP_SPECIFIC_PASSWORD) are present.
   hardenedRuntime: true
