@@ -23,15 +23,15 @@ jobs:
         include:
           - target: windows
             os: windows-latest
-            command: 'electron-builder --win --x64 --publish never'
+            command: 'npx electron-builder --win --x64 --publish never'
             artifact_glob: 'dist/*-windows-*.exe'
           - target: mac-x64
             os: macos-13
-            command: 'electron-builder --mac --x64 --publish never'
+            command: 'npx electron-builder --mac --x64 --publish never'
             artifact_glob: 'dist/*-mac-x64.*'
           - target: mac-arm64
             os: macos-14
-            command: 'electron-builder --mac --arm64 --publish never'
+            command: 'npx electron-builder --mac --arm64 --publish never'
             artifact_glob: 'dist/*-mac-arm64.*'
 
     runs-on: ${{ matrix.os }}
