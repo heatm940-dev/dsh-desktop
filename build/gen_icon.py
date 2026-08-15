@@ -55,3 +55,10 @@ D.rectangle([0, 0, 0, 0], fill=BLACK)
 
 IMG.save("icon.png")
 print(f"icon.png written: {SIZE}x{SIZE}")
+
+# Windows installer/executable icons require a real .ico (NSIS rejects PNG).
+IMG.save(
+    "icon.ico",
+    sizes=[(16, 16), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)],
+)
+print("icon.ico written (multi-size)")

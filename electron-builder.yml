@@ -46,8 +46,8 @@ win:
     - target: nsis
       arch:
         - x64
-  # ico is auto-generated from build/icon.png by electron-builder.
-  icon: build/icon.png
+  # NSIS refuses PNG icons; use a real multi-size .ico (build/gen_icon.py).
+  icon: build/icon.ico
   artifactName: ${productName}-${version}-windows-${arch}.${ext}
 
 nsis:
@@ -60,8 +60,8 @@ nsis:
   shortcutName: DeepSeek Harness Desktop
   # https://www.electron.build/configuration/nsis — differential update friendly
   differentialPackage: true
-  installerIcon: build/icon.png
-  uninstallerIcon: build/icon.png
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
 
 # ---------------------------------------------------------------- macos ----
 mac:
