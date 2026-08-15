@@ -11,7 +11,7 @@
  *   node scripts/fetch-node.mjs --all      # all platforms (CI helper)
  */
 import { createWriteStream } from 'node:fs';
-import { chmodSync, copyFileSync, existsSync, mkdirSync, rmSync } from 'node:fs';
+import { chmodSync, copyFileSync, existsSync, mkdirSync, readdirSync, rmSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { get as httpsGet } from 'node:https';
 import { dirname, join } from 'node:path';
@@ -88,7 +88,17 @@ async function extract(archive, destDir) {
   }
 }
 
-function fetchOne(platform, arch) {
+/** Locate the node binary after extraction without assuming the tarball's
+ *  top-level directory name (which varies across node builds). */
+function findNodeBinary(extractDir, binName) {
+  for (const entry of readdirSync(extractDir)) {
+    const candidate = join(extractDir, entry, binName);
+    if (existsSync(candidate)) return candidate;
+  }
+  return null;
+}
+
+async function fetchOne(platform, arch) {
   if (hasRuntime(platform, arch)) {
     console.log(`[skip] node-runtime already present for ${platform}/${arch}`);
     return;
@@ -102,10 +112,16 @@ function fetchOne(platform, arch) {
   return download(urlFor(platform, arch), archive)
     .then(() => extract(archive, extractDir))
     .then(() => {
-      const srcDir = join(extractDir, `node-${NODE_VERSION}-${PLATFORMS[platform].os}-${archName(arch)}`);
       const bin = PLATFORMS[platform].bin;
+      const src = findNodeBinary(extractDir, bin);
+      if (!src) {
+        throw new Error(
+          `could not locate '${bin}' under ${extractDir} after extraction; ` +
+          `entries: ${readdirSync(extractDir).join(', ')}`,
+        );
+      }
       mkdirSync(RUNTIME_DIR, { recursive: true });
-      copyFileSync(join(srcDir, bin), join(RUNTIME_DIR, bin));
+      copyFileSync(src, join(RUNTIME_DIR, bin));
       if (platform !== 'win32') {
         try { chmodSync(join(RUNTIME_DIR, bin), 0o755); } catch { /* noop */ }
       }
