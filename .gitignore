@@ -8,6 +8,9 @@ yarn-error.log*
 dist/
 out/
 
+# --- npm cache (local scratch, never commit) ---
+.npm-cache/
+
 # --- Embedded resources (regenerate via scripts/fetch-node.mjs and
 #                       `npm run setup`) ---
 resources/node-runtime/
