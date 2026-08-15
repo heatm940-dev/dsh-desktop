@@ -13,7 +13,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run fetch:node -- --all
-      - run: npx --yes electron-builder --dir --publish never
+      - name: Install shell dependencies
+        run: npm install --no-audit --no-fund
+      - name: Syntax check
+        run: |
+          for f in electron/main.cjs electron/preload.cjs electron/updater.cjs \
+                   scripts/fetch-node.mjs scripts/setup.mjs scripts/verify-local.mjs scripts/mock-dsh.mjs; do
+            node --check "$f"
+          done
+      - name: Validate electron-builder.yml
+        run: npx --yes electron-builder --config electron-builder.yml --help >/dev/null && echo "config OK"

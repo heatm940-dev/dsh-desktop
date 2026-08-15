@@ -43,13 +43,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
 
+      # No package-lock.json is committed (npm is not runnable inside the
+      # authoring sandbox), so use npm install instead of npm ci.
       - name: Install shell dependencies
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
-      - name: Fetch embedded Node runtimes
-        run: npm run fetch:node -- --all
+      # Each runner only fetches the Node runtime for its own platform/arch,
+      # so every installer ships a single ~85MB runtime instead of all three.
+      - name: Fetch embedded Node runtime
+        run: npm run fetch:node
 
       - name: Install dsh runtime into resources/dsh
         working-directory: resources/dsh
