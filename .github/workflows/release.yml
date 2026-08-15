@@ -70,6 +70,9 @@ jobs:
         env:
           GH_OWNER: ${{ github.repository_owner }}
           GH_REPO: ${{ github.event.repository.name }}
+          # Without a Developer ID certificate, skip auto code-signing
+          # discovery entirely so unsigned dmg/zip builds succeed.
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
           # Set CSC_LINK/CSC_KEY_PASSWORD as repo secrets to enable macOS signing/notarization.
           CSC_LINK: ${{ secrets.CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
