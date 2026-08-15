@@ -48,7 +48,9 @@ win:
         - x64
   # NSIS refuses PNG icons; use a real multi-size .ico (build/gen_icon.py).
   icon: build/icon.ico
-  artifactName: ${productName}-${version}-windows-${arch}.${ext}
+  # Keep artifact names free of spaces/dots so electron-updater's latest.yml
+  # (which sanitizes productName) references the exact same filename.
+  artifactName: dsh-desktop-${version}-windows-${arch}.${ext}
 
 nsis:
   oneClick: false          # allow choosing install dir
@@ -76,7 +78,7 @@ mac:
         - arm64
   category: public.app-category.developer-tools
   icon: build/icon.png
-  artifactName: ${productName}-${version}-mac-${arch}.${ext}
+  artifactName: dsh-desktop-${version}-mac-${arch}.${ext}
   # No Developer ID certificate: never auto-discover keychain identities
   # (GitHub macOS runners carry one and the empty-password attempt fails).
   identity: null
@@ -86,7 +88,7 @@ mac:
   gatekeeperAssess: false
 
 dmg:
-  artifactName: ${productName}-${version}-mac-${arch}.${ext}
+  artifactName: dsh-desktop-${version}-mac-${arch}.${ext}
   title: ${productName} ${version}
   contents:
     - x: 130

@@ -107,6 +107,9 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           generate_release_notes: true
+          # Re-publishing the same tag (iterative CI fixes) must replace
+          # existing assets instead of 404ing on metadata update.
+          replaces_existing: true
           files: |
             dist/**/*.exe
             dist/**/*.zip
