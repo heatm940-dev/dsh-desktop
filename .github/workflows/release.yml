@@ -24,17 +24,14 @@ jobs:
           - target: windows
             os: windows-latest
             command: 'npx electron-builder --win --x64 --publish never'
-            artifact_glob: 'dist/*'
           - target: mac-x64
             # macos-13 (Intel) runners queue for 1h+ on shared GH infra; an
             # arm64 runner cross-builds the x64 artifacts fine.
             os: macos-14
             command: 'node scripts/fetch-node.mjs --platform darwin --arch x64 && npx electron-builder --mac --x64 --publish never'
-            artifact_glob: 'dist/*'
           - target: mac-arm64
             os: macos-14
             command: 'npx electron-builder --mac --arm64 --publish never'
-            artifact_glob: 'dist/*'
 
     runs-on: ${{ matrix.os }}
 
@@ -87,7 +84,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dsh-desktop-${{ matrix.target }}
-          path: ${{ matrix.artifact_glob }}
+          # Explicit globs only — dist/* would also pull the win-unpacked/
+          # and mac*/ unpacked app dirs into the artifacts.
+          path: |
+            dist/*.exe
+            dist/*.blockmap
+            dist/*.yml
+            dist/*.dmg
+            dist/*.zip
           if-no-files-found: error
           retention-days: 14
 
@@ -109,7 +113,7 @@ jobs:
           generate_release_notes: true
           # Re-publishing the same tag (iterative CI fixes) must replace
           # existing assets instead of 404ing on metadata update.
-          replaces_existing: true
+          overwrite_files: true
           files: |
             dist/**/*.exe
             dist/**/*.zip
