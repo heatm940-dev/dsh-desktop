@@ -1,0 +1,101 @@
+# electron-builder configuration for DeepSeek Harness Desktop
+#
+# Targets:
+#   Windows -> NSIS installer (exe) + latest.yml  (auto-update via electron-updater)
+#   macOS   -> dmg (installer) + zip (auto-update payload) + latest-mac.yml
+#
+# Auto-update publishing: GitHub Releases. Override owner/repo via env:
+#   GH_OWNER / GH_REPO  (or edit `publish` below to point at your fork).
+
+appId: com.deepseek.harness.desktop
+productName: DeepSeek Harness Desktop
+copyright: Copyright © 2026 dsh-desktop contributors
+
+directories:
+  output: dist
+  buildResources: build
+
+# The Electron shell code only.
+files:
+  - electron/**/*
+  - package.json
+
+# The dsh runtime + embedded Node are shipped as resources, not packed into
+# asar, so they can be updated independently and run with a native Node ABI.
+extraResources:
+  - from: resources/node-runtime
+    to: node-runtime
+    filter:
+      - "**/*"
+  - from: resources/dsh
+    to: dsh
+    filter:
+      - "**/*"
+      - "!**/*.map"
+      - "!**/.git/**"
+
+asar: true
+asarUnpack:
+  - "**/*.node"
+
+compression: normal
+
+# ---------------------------------------------------------------- win32 ----
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  # ico is auto-generated from build/icon.png by electron-builder.
+  icon: build/icon.png
+  artifactName: ${productName}-${version}-windows-${arch}.${ext}
+
+nsis:
+  oneClick: false          # allow choosing install dir
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  deleteAppDataOnUninstall: false
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: DeepSeek Harness Desktop
+  # https://www.electron.build/configuration/nsis — differential update friendly
+  differentialPackage: true
+  installerIcon: build/icon.png
+  uninstallerIcon: build/icon.png
+
+# ---------------------------------------------------------------- macos ----
+mac:
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+    - target: zip
+      arch:
+        - x64
+        - arm64
+  category: public.app-category.developer-tools
+  icon: build/icon.png
+  artifactName: ${productName}-${version}-mac-${arch}.${ext}
+  # Signing/notarization happen automatically when CSC_LINK / CSC_KEY_PASSWORD
+  # (and optionally APPLE_ID / APPLE_APP_SPECIFIC_PASSWORD) are present.
+  hardenedRuntime: true
+  gatekeeperAssess: false
+
+dmg:
+  artifactName: ${productName}-${version}-mac-${arch}.${ext}
+  title: ${productName} ${version}
+  contents:
+    - x: 130
+      y: 220
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
+
+# ------------------------------------------------------------ publishing ----
+publish:
+  provider: github
+  owner: ${env.GH_OWNER}
+  repo: ${env.GH_REPO}
+  releaseType: release

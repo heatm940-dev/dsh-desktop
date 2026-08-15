@@ -1,0 +1,25 @@
+# --- Node / Electron shell ---
+node_modules/
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# --- Build output ---
+dist/
+out/
+
+# --- Embedded resources (regenerate via scripts/fetch-node.mjs and
+#                       `npm run setup`) ---
+resources/node-runtime/
+resources/dsh/*
+!resources/dsh/.gitkeep
+
+# --- Local editor / OS junk ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# --- Temporary scratch space ---
+tmp/
+tmp-node/

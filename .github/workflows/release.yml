@@ -1,0 +1,103 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Build artifacts without creating a GitHub release'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: build ${{ matrix.target }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: windows
+            os: windows-latest
+            command: 'electron-builder --win --x64 --publish never'
+            artifact_glob: 'dist/*-windows-*.exe'
+          - target: mac-x64
+            os: macos-13
+            command: 'electron-builder --mac --x64 --publish never'
+            artifact_glob: 'dist/*-mac-x64.*'
+          - target: mac-arm64
+            os: macos-14
+            command: 'electron-builder --mac --arm64 --publish never'
+            artifact_glob: 'dist/*-mac-arm64.*'
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install shell dependencies
+        run: npm ci
+
+      - name: Fetch embedded Node runtimes
+        run: npm run fetch:node -- --all
+
+      - name: Install dsh runtime into resources/dsh
+        working-directory: resources/dsh
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install @deepseek-ai/dsh@0.1.0-rc.6 --omit=dev --no-audit --no-fund
+
+      - name: Build (${{ matrix.target }})
+        env:
+          GH_OWNER: ${{ github.repository_owner }}
+          GH_REPO: ${{ github.event.repository.name }}
+          # Set CSC_LINK/CSC_KEY_PASSWORD as repo secrets to enable macOS signing/notarization.
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: ${{ matrix.command }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dsh-desktop-${{ matrix.target }}
+          path: ${{ matrix.artifact_glob }}
+          if-no-files-found: error
+          retention-days: 14
+
+  publish:
+    name: publish release
+    needs: build
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            dist/**/*.exe
+            dist/**/*.zip
+            dist/**/*.dmg
+            dist/**/*.yml
+            dist/**/*.blockmap
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,28 @@
+{
+  "name": "dsh-desktop",
+  "productName": "DeepSeek Harness Desktop",
+  "description": "DeepSeek Harness (dsh) packaged as a one-click install desktop app with auto-update, for Windows and macOS.",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "author": {
+    "name": "dsh-desktop maintainers"
+  },
+  "main": "electron/main.cjs",
+  "scripts": {
+    "postinstall": "node scripts/fetch-node.mjs || true",
+    "setup": "node scripts/setup.mjs",
+    "dev": "electron .",
+    "fetch:node": "node scripts/fetch-node.mjs",
+    "verify:dsh": "node scripts/verify-local.mjs",
+    "dist:win": "electron-builder --win --publish never",
+    "dist:mac": "electron-builder --mac --publish never",
+    "dist:all": "electron-builder --win --mac --publish never",
+    "release": "electron-builder --win --mac --publish always"
+  },
+  "devDependencies": {
+    "electron": "^43.4.0",
+    "electron-builder": "^26.15.3",
+    "electron-updater": "^6.8.9"
+  }
+}
