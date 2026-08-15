@@ -89,11 +89,14 @@ async function extract(archive, destDir) {
 }
 
 /** Locate the node binary after extraction without assuming the tarball's
- *  top-level directory name (which varies across node builds). */
+ *  top-level directory name or layout (unix archives put it in bin/, the
+ *  windows zip at the root). */
 function findNodeBinary(extractDir, binName) {
   for (const entry of readdirSync(extractDir)) {
-    const candidate = join(extractDir, entry, binName);
-    if (existsSync(candidate)) return candidate;
+    const dir = join(extractDir, entry);
+    for (const candidate of [join(dir, binName), join(dir, 'bin', binName)]) {
+      if (existsSync(candidate)) return candidate;
+    }
   }
   return null;
 }
