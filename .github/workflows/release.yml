@@ -36,6 +36,11 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
+    # The repo .npmrc points at npmmirror for CN dev machines; GitHub runners
+    # are fastest against the official registry, so override it here.
+    env:
+      npm_config_registry: https://registry.npmjs.org
+
     steps:
       - uses: actions/checkout@v4
 
@@ -55,9 +60,10 @@ jobs:
         run: npm run fetch:node
 
       - name: Install dsh runtime into resources/dsh
+        shell: bash
         working-directory: resources/dsh
         run: |
-          npm init -y >/dev/null 2>&1
+          npm init -y
           npm install @deepseek-ai/dsh@0.1.0-rc.6 --omit=dev --no-audit --no-fund
 
       - name: Build (${{ matrix.target }})
