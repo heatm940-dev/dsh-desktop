@@ -145,7 +145,11 @@ async function fetchOne(platform, arch) {
 }
 
 async function main() {
-  const all = process.argv.includes('--all');
+  const args = process.argv.slice(2);
+  const all = args.includes('--all');
+  const platformOverride = optionValue(args, '--platform');
+  const archOverride = optionValue(args, '--arch');
+
   if (all) {
     for (const [platform, arch] of [
       ['win32', 'x64'],
@@ -155,10 +159,17 @@ async function main() {
       await fetchOne(platform, arch);
     }
   } else {
-    await fetchOne(process.platform, process.arch);
+    await fetchOne(platformOverride || process.platform, archOverride || process.arch);
   }
   rmSync(TMP_DIR, { recursive: true, force: true });
   console.log('done.');
+}
+
+function optionValue(argv, flag) {
+  const i = argv.indexOf(flag);
+  if (i !== -1 && argv[i + 1]) return argv[i + 1];
+  const hit = argv.find((a) => a.startsWith(`${flag}=`));
+  return hit ? hit.slice(flag.length + 1) : null;
 }
 
 main().catch((err) => {

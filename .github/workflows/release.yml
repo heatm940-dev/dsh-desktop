@@ -26,8 +26,10 @@ jobs:
             command: 'npx electron-builder --win --x64 --publish never'
             artifact_glob: 'dist/*-windows-*.exe'
           - target: mac-x64
-            os: macos-13
-            command: 'npx electron-builder --mac --x64 --publish never'
+            # macos-13 (Intel) runners queue for 1h+ on shared GH infra; an
+            # arm64 runner cross-builds the x64 artifacts fine.
+            os: macos-14
+            command: 'node scripts/fetch-node.mjs --platform darwin --arch x64 && npx electron-builder --mac --x64 --publish never'
             artifact_glob: 'dist/*-mac-x64.*'
           - target: mac-arm64
             os: macos-14
